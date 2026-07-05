@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Web của tôi</title>
+<title>Website Thông Tin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +59,6 @@
     align-items: center;
   }
 
-  /* Avatar */
   .avatar-shell{
     position: relative;
     width: 108px;
@@ -135,27 +134,6 @@
     margin: 0 0 36px;
   }
 
-  .eyebrow{
-    align-self: flex-start;
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 0 0 14px 4px;
-    display:flex;
-    align-items:center;
-    gap: 8px;
-  }
-
-  .eyebrow::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background: var(--border);
-  }
-
-  /* Trajectory + link stack */
   .stack{
     position: relative;
     width: 100%;
@@ -226,6 +204,7 @@
     text-decoration:none;
     color: var(--text);
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    cursor: pointer;
   }
 
   .link-card:hover, .link-card:focus-visible{
@@ -288,7 +267,6 @@
     color: var(--accent-mint);
   }
 
-  /* Socials */
   .socials{
     display:flex;
     gap: 12px;
@@ -335,8 +313,8 @@
 
   <div class="avatar-shell">
     <div class="avatar-ring"></div>
-    <div class="avatar">🚀</div>
-    <div class="badge">✦</div>
+    <div class="avatar"><img src="https://res.cloudinary.com/dkui88bcf/image/upload/v1783257473/1_gw7mdl.webp" alt="🚀"></div>
+    <div class="badge"></div>
   </div>
 
   <h1>Lý Phúc Thiện</h1>
@@ -346,8 +324,6 @@
     đều tập kết ở đây. Chọn một điểm đến và cùng cất cánh nhé.
   </p>
 
-  <p class="eyebrow">Điểm đến</p>
-
   <div class="stack">
     <div class="trajectory">
       <div class="trajectory-line"></div>
@@ -356,45 +332,31 @@
 
     <ul class="links">
       <li>
-        <a class="link-card" href="#" target="_blank" rel="noopener">
+        <a class="link-card" href="https://my-discord-bot-mfu0.onrender.com/" target="_blank" rel="noopener">
           <span class="link-node"></span>
           <span class="link-icon">🌐</span>
           <span class="link-text">
-            <p class="link-title">Website chính</p>
-            <p class="link-sub">tenban.com</p>
+            <p class="link-title">Website Bot Tự Làm</p>
           </span>
           <span class="link-arrow">→</span>
         </a>
       </li>
       <li>
-        <a class="link-card" href="#" target="_blank" rel="noopener">
+        <a class="link-card" href="https://www.youtube.com/@lyphucthien1803" target="_blank" rel="noopener">
           <span class="link-node"></span>
           <span class="link-icon">🎥</span>
           <span class="link-text">
             <p class="link-title">Kênh YouTube</p>
-            <p class="link-sub">Video mới mỗi tuần</p>
           </span>
           <span class="link-arrow">→</span>
         </a>
       </li>
       <li>
-        <a class="link-card" href="#" target="_blank" rel="noopener">
+        <a class="link-card" href="https://discord.gg/gyZ27Hw9qu" target="_blank" rel="noopener">
           <span class="link-node"></span>
-          <span class="link-icon">🛍️</span>
+          <span class="link-icon">💬</span>
           <span class="link-text">
-            <p class="link-title">Cửa hàng</p>
-            <p class="link-sub">Sản phẩm & merch</p>
-          </span>
-          <span class="link-arrow">→</span>
-        </a>
-      </li>
-      <li>
-        <a class="link-card" href="#" target="_blank" rel="noopener">
-          <span class="link-node"></span>
-          <span class="link-icon">✉️</span>
-          <span class="link-text">
-            <p class="link-title">Liên hệ hợp tác</p>
-            <p class="link-sub">hello@tenban.com</p>
+            <p class="link-title">Discord</p>
           </span>
           <span class="link-arrow">→</span>
         </a>
@@ -402,19 +364,11 @@
     </ul>
   </div>
 
-  <div class="socials">
-    <a class="social-btn" href="#" aria-label="Instagram" target="_blank" rel="noopener">📷</a>
-    <a class="social-btn" href="#" aria-label="TikTok" target="_blank" rel="noopener">🎵</a>
-    <a class="social-btn" href="#" aria-label="Facebook" target="_blank" rel="noopener">📘</a>
-    <a class="social-btn" href="#" aria-label="Email" target="_blank" rel="noopener">📧</a>
-  </div>
-
-  <footer>Trạm phóng cá nhân • <span>Hello 🚀</span></footer>
+  <footer>Trang Thông Tin Của Người Dùng • <span>Created By Lý Phúc Thiện</span></footer>
 
 </div>
 
 <script>
-  // Starfield nền — nhẹ, tôn trọng reduced-motion
   const canvas = document.getElementById('starfield');
   const ctx = canvas.getContext('2d');
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
