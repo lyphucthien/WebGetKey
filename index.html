@@ -1,9 +1,459 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <title>Web của tôi</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web của tôi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0E1A;
+    --bg-glow: #121a30;
+    --surface: #131B2E;
+    --surface-hover: #1B2540;
+    --border: #232E4A;
+    --accent-violet: #7C5CFF;
+    --accent-mint: #34E4B5;
+    --text: #F4F6FB;
+    --muted: #8B93AB;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  #stars{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--bg-glow) 0%, var(--bg) 55%);
+  }
+
+  #stars canvas{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 64px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Avatar */
+  .avatar-shell{
+    position: relative;
+    width: 108px;
+    height: 108px;
+    margin-bottom: 20px;
+  }
+
+  .avatar-ring{
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--border);
+    animation: spin 22s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .avatar-ring{ animation: none; }
+  }
+
+  @keyframes spin{
+    from{ transform: rotate(0deg); }
+    to{ transform: rotate(360deg); }
+  }
+
+  .avatar{
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--accent-violet), #4B2FD8);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 42px;
+    box-shadow: 0 0 0 4px var(--bg), 0 12px 32px -8px rgba(124,92,255,0.55);
+  }
+
+  .badge{
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-mint);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 15px;
+    border: 3px solid var(--bg);
+  }
+
+  h1{
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .handle{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent-mint);
+    margin: 0 0 14px;
+  }
+
+  .bio{
+    text-align:center;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.55;
+    max-width: 340px;
+    margin: 0 0 36px;
+  }
+
+  .eyebrow{
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 14px 4px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .eyebrow::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--border);
+  }
+
+  /* Trajectory + link stack */
+  .stack{
+    position: relative;
+    width: 100%;
+  }
+
+  .trajectory{
+    position: absolute;
+    left: 22px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+  }
+
+  .trajectory-line{
+    position: absolute;
+    left: 0;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--border) 0 6px,
+      transparent 6px 12px
+    );
+  }
+
+  .trajectory-dot{
+    position: absolute;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-mint);
+    box-shadow: 0 0 12px 2px rgba(52,228,181,0.7);
+    animation: travel 5s ease-in-out infinite;
+  }
+
+  @keyframes travel{
+    0%   { top: 28px; opacity: 0; }
+    8%   { opacity: 1; }
+    92%  { opacity: 1; }
+    100% { top: calc(100% - 28px); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .trajectory-dot{ animation: none; display:none; }
+  }
+
+  .links{
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+
+  .link-card{
+    position: relative;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    padding: 14px 18px 14px 52px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-decoration:none;
+    color: var(--text);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .link-card:hover, .link-card:focus-visible{
+    transform: translateX(4px);
+    background: var(--surface-hover);
+    border-color: var(--accent-violet);
+    outline: none;
+  }
+
+  .link-card:focus-visible{
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-mint);
+  }
+
+  .link-node{
+    position:absolute;
+    left: -30px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent-violet);
+  }
+
+  .link-icon{
+    font-size: 20px;
+    width: 28px;
+    text-align:center;
+    flex-shrink:0;
+  }
+
+  .link-text{
+    flex: 1;
+    min-width: 0;
+  }
+
+  .link-title{
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 2px;
+  }
+
+  .link-sub{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .link-arrow{
+    color: var(--muted);
+    font-size: 16px;
+    flex-shrink:0;
+    transition: transform 0.18s ease, color 0.18s ease;
+  }
+
+  .link-card:hover .link-arrow{
+    transform: translateX(3px);
+    color: var(--accent-mint);
+  }
+
+  /* Socials */
+  .socials{
+    display:flex;
+    gap: 12px;
+    margin: 40px 0 8px;
+  }
+
+  .social-btn{
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 17px;
+    text-decoration:none;
+    color: var(--text);
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+
+  .social-btn:hover, .social-btn:focus-visible{
+    transform: translateY(-3px);
+    border-color: var(--accent-mint);
+    outline:none;
+  }
+
+  footer{
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    margin-top: 28px;
+    text-align:center;
+  }
+
+  footer span{ color: var(--accent-mint); }
+</style>
 </head>
 <body>
-  <h1>Hello 🚀</h1>
+
+<div id="stars"><canvas id="starfield"></canvas></div>
+
+<div class="wrap">
+
+  <div class="avatar-shell">
+    <div class="avatar-ring"></div>
+    <div class="avatar">🚀</div>
+    <div class="badge">✦</div>
+  </div>
+
+  <h1>Lý Phúc Thiện</h1>
+  <p class="handle">@lyphucthien</p>
+  <p class="bio">
+    Chào mừng bạn đến trạm phóng của tôi — mọi liên kết, dự án và kênh
+    đều tập kết ở đây. Chọn một điểm đến và cùng cất cánh nhé.
+  </p>
+
+  <p class="eyebrow">Điểm đến</p>
+
+  <div class="stack">
+    <div class="trajectory">
+      <div class="trajectory-line"></div>
+      <div class="trajectory-dot"></div>
+    </div>
+
+    <ul class="links">
+      <li>
+        <a class="link-card" href="#" target="_blank" rel="noopener">
+          <span class="link-node"></span>
+          <span class="link-icon">🌐</span>
+          <span class="link-text">
+            <p class="link-title">Website chính</p>
+            <p class="link-sub">tenban.com</p>
+          </span>
+          <span class="link-arrow">→</span>
+        </a>
+      </li>
+      <li>
+        <a class="link-card" href="#" target="_blank" rel="noopener">
+          <span class="link-node"></span>
+          <span class="link-icon">🎥</span>
+          <span class="link-text">
+            <p class="link-title">Kênh YouTube</p>
+            <p class="link-sub">Video mới mỗi tuần</p>
+          </span>
+          <span class="link-arrow">→</span>
+        </a>
+      </li>
+      <li>
+        <a class="link-card" href="#" target="_blank" rel="noopener">
+          <span class="link-node"></span>
+          <span class="link-icon">🛍️</span>
+          <span class="link-text">
+            <p class="link-title">Cửa hàng</p>
+            <p class="link-sub">Sản phẩm & merch</p>
+          </span>
+          <span class="link-arrow">→</span>
+        </a>
+      </li>
+      <li>
+        <a class="link-card" href="#" target="_blank" rel="noopener">
+          <span class="link-node"></span>
+          <span class="link-icon">✉️</span>
+          <span class="link-text">
+            <p class="link-title">Liên hệ hợp tác</p>
+            <p class="link-sub">hello@tenban.com</p>
+          </span>
+          <span class="link-arrow">→</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="socials">
+    <a class="social-btn" href="#" aria-label="Instagram" target="_blank" rel="noopener">📷</a>
+    <a class="social-btn" href="#" aria-label="TikTok" target="_blank" rel="noopener">🎵</a>
+    <a class="social-btn" href="#" aria-label="Facebook" target="_blank" rel="noopener">📘</a>
+    <a class="social-btn" href="#" aria-label="Email" target="_blank" rel="noopener">📧</a>
+  </div>
+
+  <footer>Trạm phóng cá nhân • <span>Hello 🚀</span></footer>
+
+</div>
+
+<script>
+  // Starfield nền — nhẹ, tôn trọng reduced-motion
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let stars = [];
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const count = Math.floor((canvas.width * canvas.height) / 9000);
+    stars = Array.from({length: count}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.3,
+      a: Math.random() * 0.6 + 0.2,
+      speed: Math.random() * 0.15 + 0.02
+    }));
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    for(const s of stars){
+      ctx.globalAlpha = s.a;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      if(!prefersReducedMotion){
+        s.y += s.speed;
+        if(s.y > canvas.height) s.y = 0;
+      }
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+</script>
+
 </body>
 </html>
