@@ -39,8 +39,8 @@
     background-image: url('https://res.cloudinary.com/dkui88bcf/image/upload/v1786093084/ThoBayMau_txlygo.jpg');
     background-size: cover;
     background-position: center;
-    filter: blur(14px) brightness(0.45) saturate(0.8);
-    transform: scale(1.1); /* tránh lộ viền trắng do blur */
+    filter: blur(4px) brightness(0.65) saturate(0.95);
+    transform: scale(1.03); /* tránh lộ viền trắng do blur */
   }
   #bg-canvas{
     position: fixed;
@@ -63,7 +63,7 @@
     content:"";
     position:fixed; inset:0;
     z-index: -1;
-    background: radial-gradient(circle at 50% 45%, rgba(10,14,18,0.55) 0%, rgba(10,14,18,0.85) 55%, rgba(10,14,18,0.96) 100%);
+    background: radial-gradient(circle at 50% 45%, rgba(10,14,18,0.25) 0%, rgba(10,14,18,0.55) 55%, rgba(10,14,18,0.75) 100%);
     pointer-events:none;
   }
 
@@ -76,7 +76,7 @@
     box-shadow: 0 0 0 1px rgba(255,184,77,0.04), 0 20px 60px rgba(0,0,0,0.6);
   }
   .titlebar{
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:center; justify-content:flex-end;
     padding: 10px 16px;
     border-bottom: 1px solid var(--line);
     background: var(--panel-2);
@@ -89,10 +89,10 @@
   .dots{ display:flex; gap:6px; }
   .dots span{ width:8px; height:8px; border-radius:50%; background:#2a3640; }
 
-  .body{ padding: 28px 26px 26px; }
+  .body{ padding: 28px 26px 26px; border-radius: 4px; }
 
   .hdr{
-    display:flex; justify-content:space-between; align-items:baseline;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
     margin-bottom: 22px;
     border-bottom: 1px dashed var(--line);
     padding-bottom: 16px;
@@ -102,18 +102,17 @@
     font-weight: 600;
   }
   .hdr h1 span{ color: var(--amber); }
-  .hdr .stamp{ font-size: 11px; color: var(--text-dim); }
-
-  .status-row{
-    display:flex; align-items:center; gap:10px;
-    font-size: 12px; color: var(--text-dim);
-    margin-bottom: 18px; letter-spacing: 0.5px;
+  .hdr .stamp{ font-size: 11px; color: var(--text-dim); margin-right: auto; }
+  .status-inline{
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; white-space: nowrap;
   }
+
   .pulse{
     width:8px; height:8px; border-radius:50%;
     background: var(--amber);
     box-shadow: 0 0 0 0 rgba(255,184,77,0.6);
     animation: pulse 1.6s infinite;
+    flex-shrink:0;
   }
   .pulse.ready{ background: var(--green); animation:none; }
   @keyframes pulse{
@@ -229,20 +228,12 @@
   <canvas id="bg-canvas"></canvas>
 
   <div class="console">
-    <div class="titlebar">
-      <span class="label">// access-console v1</span>
-      <div class="dots"><span></span><span></span><span></span></div>
-    </div>
-
     <div class="body">
       <div class="hdr">
         <h1>GET<span>KEY</span></h1>
         <span class="stamp" id="stamp"></span>
-      </div>
-
-      <div class="status-row">
         <div class="pulse" id="pulse"></div>
-        <span id="statusText">ĐANG XÁC MINH — VUI LÒNG CHỜ</span>
+        <span class="status-inline" id="statusText">ĐANG XÁC MINH</span>
       </div>
 
       <!-- Khu vực quảng cáo: dán code AdSense/banner của bạn vào #ad-slot -->
@@ -270,7 +261,7 @@
         </div>
       </div>
 
-      <div class="footnote">Vui Lòng Không Rời Trang Này. Key Đang Được Tạo</div>
+      <div class="footnote">Vui Lòng Không Rời Trang</div>
     </div>
   </div>
 
@@ -341,7 +332,7 @@
     if (elapsed >= TOTAL_SECONDS) {
       clearInterval(timer);
       pulse.classList.add('ready');
-      statusText.textContent = 'SẴN SÀNG — BẤM ĐỂ NHẬN KEY';
+      statusText.textContent = 'SẴN SÀNG';
       mainBtn.disabled = false;
       mainBtn.textContent = 'NHẬN KEY';
       mainBtn.classList.add('ready');
@@ -352,11 +343,11 @@
     const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
     const digits = '0123456789';
     const part = (charset, len) => Array.from({length:len}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
-    return `FREE-${part(letters,4)}-${part(digits,4)}`;
+    return `FREE-${part(letters,6)}-${part(digits,4)}`;
   }
 
   // Link quảng cáo mở song song khi bấm nút — không bắt buộc, key vẫn cấp ngay dù có mở được tab hay không
-  const AD_LINK = 'https://vidu-quangcao.com'; // đổi thành link quảng cáo/tài trợ của bạn
+  const AD_LINK = 'https://lyphucthien.netlify.app/';
 
   mainBtn.addEventListener('click', () => {
     if (!mainBtn.classList.contains('ready')) return;
