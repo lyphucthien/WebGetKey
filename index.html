@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACCESS CONSOLE — Lấy Key</title>
+<title>Get Key Xác Minh Minecraft</title>
 <style>
   :root{
     --bg: #0a0e12;
@@ -37,10 +37,10 @@
     inset: 0;
     z-index: -3;
     background-image: url('https://res.cloudinary.com/dkui88bcf/image/upload/v1786093084/ThoBayMau_txlygo.jpg');
-    background-size: cover;
-    background-position: center;
+    background-size: contain;
+    background-position: center top;
+    background-repeat: no-repeat;
     filter: blur(4px) brightness(0.65) saturate(0.95);
-    transform: scale(1.03); /* tránh lộ viền trắng do blur */
   }
   #bg-canvas{
     position: fixed;
@@ -261,7 +261,7 @@
         </div>
       </div>
 
-      <div class="footnote">Vui Lòng Không Rời Trang</div>
+      <div class="footnote">Vui Lòng Không Rời Trang Này. Key Đang Được Tạo</div>
     </div>
   </div>
 
@@ -307,7 +307,7 @@
     draw();
   })();
 
-  const TOTAL_SECONDS = 10; // đổi thời gian đếm ngược tại đây
+  const TOTAL_SECONDS = 20; // đổi thời gian đếm ngược tại đây
   let elapsed = 0;
 
   const pulse = document.getElementById('pulse');
@@ -343,11 +343,11 @@
     const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
     const digits = '0123456789';
     const part = (charset, len) => Array.from({length:len}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
-    return `FREE-${part(letters,6)}-${part(digits,4)}`;
+    return `FREE-${part(letters,4)}-${part(digits,4)}`;
   }
 
   // Link quảng cáo mở song song khi bấm nút — không bắt buộc, key vẫn cấp ngay dù có mở được tab hay không
-  const AD_LINK = 'https://lyphucthien.netlify.app/';
+  const AD_LINK = 'https://vidu-quangcao.com';
 
   mainBtn.addEventListener('click', () => {
     if (!mainBtn.classList.contains('ready')) return;
