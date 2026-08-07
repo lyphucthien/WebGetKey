@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Get Key Xác Minh Minecraft</title>
+<title>Web Get Key Xác Minh Minecraft</title>
 <style>
   :root{
     --bg: #0a0e12;
@@ -37,7 +37,7 @@
     inset: 0;
     z-index: -3;
     background-image: url('https://res.cloudinary.com/dkui88bcf/image/upload/v1786093084/ThoBayMau_txlygo.jpg');
-    background-size: contain;
+    background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
     filter: blur(4px) brightness(0.65) saturate(0.95);
@@ -120,20 +120,6 @@
     70%{ box-shadow: 0 0 0 8px rgba(255,184,77,0); }
     100%{ box-shadow: 0 0 0 0 rgba(255,184,77,0); }
   }
-
-  .ad-bay{
-    background: repeating-linear-gradient(135deg, #0d1319, #0d1319 10px, #101820 10px, #101820 20px);
-    border: 1px dashed var(--line);
-    border-radius: 3px;
-    min-height: 140px;
-    display:flex; align-items:center; justify-content:center;
-    color: var(--text-dim);
-    font-size: 11px; letter-spacing: 1px; text-transform:uppercase;
-    margin-bottom: 20px;
-    text-align:center;
-    padding: 12px;
-  }
-  /* Dán code quảng cáo (AdSense / banner) của bạn vào bên trong #ad-slot bên dưới HTML */
 
   .progress-wrap{
     margin-bottom: 20px;
@@ -236,18 +222,13 @@
         <span class="status-inline" id="statusText">ĐANG XÁC MINH</span>
       </div>
 
-      <!-- Khu vực quảng cáo: dán code AdSense/banner của bạn vào #ad-slot -->
-      <div class="ad-bay" id="ad-slot">
-        [ KHU VỰC QUẢNG CÁO — dán mã AdSense / banner vào đây ]
-      </div>
-
       <div class="progress-wrap">
         <div class="progress-track">
           <div class="progress-fill" id="progressFill"></div>
         </div>
         <div class="progress-labels">
           <span>0s</span>
-          <span id="countdownLabel">20s</span>
+          <span id="countdownLabel">10s</span>
         </div>
       </div>
 
@@ -307,7 +288,7 @@
     draw();
   })();
 
-  const TOTAL_SECONDS = 20; // đổi thời gian đếm ngược tại đây
+  const TOTAL_SECONDS = 10; // đổi thời gian đếm ngược tại đây
   let elapsed = 0;
 
   const pulse = document.getElementById('pulse');
@@ -339,15 +320,29 @@
     }
   }, 1000);
 
+  // Secret phải giống hệt bên plugin Minecraft (đừng để lộ nếu public repo)
+  const SECRET = 'doi-secret-nay-thanh-cua-ban';
+
+  // Checksum đơn giản: cộng mã ký tự có trọng số + secret, lấy 4 số cuối
+  function checksum(str){
+    let sum = 0;
+    const input = str + SECRET;
+    for (let i = 0; i < input.length; i++){
+      sum = (sum * 31 + input.charCodeAt(i)) >>> 0;
+    }
+    return String(sum % 10000).padStart(4, '0');
+  }
+
   function generateKey(){
     const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-    const digits = '0123456789';
     const part = (charset, len) => Array.from({length:len}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
-    return `FREE-${part(letters,4)}-${part(digits,4)}`;
+    const code = part(letters, 4);
+    const sig = checksum(code);
+    return `FREE-${code}-${sig}`;
   }
 
   // Link quảng cáo mở song song khi bấm nút — không bắt buộc, key vẫn cấp ngay dù có mở được tab hay không
-  const AD_LINK = 'https://vidu-quangcao.com';
+  const AD_LINK = 'https://link4m.net/5ixKRo5';
 
   mainBtn.addEventListener('click', () => {
     if (!mainBtn.classList.contains('ready')) return;
