@@ -1,15 +1,33 @@
 const fs = require("fs");
 const path = require("path");
+const { getStore } = require("@netlify/blobs");
+
+const MAX_RETRIES = 10;
 
 exports.handler = async function () {
     try {
+        // Đọc danh sách key gốc
         const keysPath = path.join(process.cwd(), "keys.json");
 
-        const keys = JSON.parse(
+        const keysData = JSON.parse(
             fs.readFileSync(keysPath, "utf8")
         );
 
-        if (!Array.isArray(keys) || keys.length === 0) {
+        // keys.json phải là:
+        // [
+        //   "MINECRAFT-ABCDEF-123456",
+        //   "MINECRAFT-GHIJKL-789012"
+        // ]
+
+        if (!Array.isArray(keysData)) {
+            throw new Error("keys.json must contain an array of keys");
+        }
+
+        const keys = keysData
+            .map(key => String(key).trim())
+            .filter(Boolean);
+
+        if (keys.length === 0) {
             return {
                 statusCode: 404,
                 headers: {
@@ -22,17 +40,115 @@ exports.handler = async function () {
             };
         }
 
-        // Lấy key đầu tiên
-        const key = keys[0];
+        // Netlify Blobs lưu các key đã cấp
+        const store = getStore({
+            name: "minecraft-key-claims",
+            consistency: "strong"
+        });
+
+        /*
+         * Retry để xử lý trường hợp:
+         *
+         * User A ─┐
+         *          ├─ cùng lúc lấy key
+         * User B ─┘
+         *
+         * Conditional write sẽ đảm bảo chỉ một request
+         * có thể claim cùng một trạng thái.
+         */
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+
+            const current = await store.getWithMetadata(
+                "claimed-keys",
+                {
+                    type: "json"
+                }
+            );
+
+            let claimedKeys = [];
+            let etag = null;
+
+            if (current) {
+                claimedKeys = Array.isArray(current.data)
+                    ? current.data
+                    : [];
+
+                etag = current.etag;
+            }
+
+            // Tìm key đầu tiên chưa được cấp
+            const availableKey = keys.find(
+                key => !claimedKeys.includes(key)
+            );
+
+            if (!availableKey) {
+                return {
+                    statusCode: 404,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        success: false,
+                        error: "All keys have been claimed"
+                    })
+                };
+            }
+
+            // Thêm key vào danh sách đã cấp
+            const updatedClaims = [
+                ...claimedKeys,
+                availableKey
+            ];
+
+            let result;
+
+            if (!current) {
+                // Chưa có dữ liệu → chỉ request đầu tiên được tạo
+                result = await store.setJSON(
+                    "claimed-keys",
+                    updatedClaims,
+                    {
+                        onlyIfNew: true
+                    }
+                );
+            } else {
+                // Đã có dữ liệu → chỉ cập nhật nếu dữ liệu
+                // chưa bị request khác thay đổi
+                result = await store.setJSON(
+                    "claimed-keys",
+                    updatedClaims,
+                    {
+                        onlyIfMatch: etag
+                    }
+                );
+            }
+
+            // Claim thành công
+            if (result.modified) {
+                return {
+                    statusCode: 200,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Cache-Control": "no-store"
+                    },
+                    body: JSON.stringify({
+                        success: true,
+                        key: availableKey
+                    })
+                };
+            }
+
+            // Có request khác claim trước → thử lại
+        }
 
         return {
-            statusCode: 200,
+            statusCode: 503,
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                success: true,
-                key: key
+                success: false,
+                error: "Server is busy, please try again"
             })
         };
 
