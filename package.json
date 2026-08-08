@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Thien",
-  "license": "ISC"
+  "dependencies": {
+    "@netlify/blobs": "^10.7.12"
+  },
+  "engines": {
+    "node": "24.x"
+  }
 }
