@@ -2,6 +2,9 @@
   publish = "public"
   functions = "netlify/functions"
 
+[functions]
+  included_files = ["keys.json"]
+
 [[redirects]]
   from = "/api/get-key"
   to = "/.netlify/functions/get-key"
