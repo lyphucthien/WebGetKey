@@ -1,0 +1,11 @@
+{
+  "name": "minecraft-key-web",
+  "version": "1.0.0",
+  "description": "Minecraft Key System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Thien",
+  "license": "ISC"
+}

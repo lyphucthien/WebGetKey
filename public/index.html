@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Minecraft Key</title>
+
+    <style>
+
+        :root {
+            --bg: #0a0e12;
+            --panel: rgba(14, 20, 25, 0.94);
+            --panel-2: rgba(18, 25, 31, 0.96);
+            --line: #29343d;
+
+            --text: #e6edf3;
+            --text-dim: #7d8993;
+
+            --amber: #ffb84d;
+            --amber-dim: #a8752e;
+
+            --green: #6fe08a;
+
+            --mono:
+                Consolas,
+                "Courier New",
+                monospace;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+
+        body {
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: var(--bg);
+
+            color: var(--text);
+
+            font-family: var(--mono);
+
+            overflow-x: hidden;
+        }
+
+
+        /* =========================
+           BACKGROUND
+        ========================= */
+
+        #bg-image {
+            position: fixed;
+            inset: 0;
+
+            z-index: -3;
+
+            background-image:
+                url("https://res.cloudinary.com/dkui88bcf/image/upload/v1786093084/ThoBayMau_txlygo.jpg");
+
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+
+            filter:
+                blur(4px)
+                brightness(0.65)
+                saturate(0.95);
+
+            transform: scale(1.04);
+        }
+
+
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+
+            z-index: -2;
+
+            display: block;
+        }
+
+
+        body::before {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            z-index: -1;
+
+            background:
+                radial-gradient(
+                    circle at 50% 30%,
+                    rgba(255,184,77,0.08),
+                    transparent 55%
+                ),
+
+                radial-gradient(
+                    circle at 15% 85%,
+                    rgba(111,224,138,0.05),
+                    transparent 50%
+                ),
+
+                radial-gradient(
+                    circle,
+                    rgba(255,255,255,0.03) 1px,
+                    transparent 1px
+                );
+
+            background-size:
+                auto,
+                auto,
+                22px 22px;
+
+            pointer-events: none;
+        }
+
+
+        body::after {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            z-index: -1;
+
+            background:
+                radial-gradient(
+                    circle at 50% 45%,
+                    rgba(10,14,18,0.25) 0%,
+                    rgba(10,14,18,0.55) 55%,
+                    rgba(10,14,18,0.75) 100%
+                );
+
+            pointer-events: none;
+        }
+
+
+        /* =========================
+           CONSOLE
+        ========================= */
+
+        .console {
+            position: relative;
+
+            width: 100%;
+            max-width: 560px;
+
+            background: var(--panel);
+
+            border: 1px solid var(--line);
+
+            border-radius: 4px;
+
+            box-shadow:
+                0 0 0 1px rgba(255,184,77,0.04),
+                0 20px 60px rgba(0,0,0,0.6);
+
+            backdrop-filter: blur(8px);
+        }
+
+
+        /* =========================
+           TITLE BAR
+        ========================= */
+
+        .titlebar {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 10px 16px;
+
+            border-bottom:
+                1px solid var(--line);
+
+            background:
+                var(--panel-2);
+
+            border-radius:
+                4px 4px 0 0;
+        }
+
+
+        .titlebar .label {
+            font-size: 12px;
+
+            letter-spacing: 2px;
+
+            color:
+                var(--text-dim);
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .dots {
+            display: flex;
+
+            gap: 6px;
+        }
+
+
+        .dots span {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #2a3640;
+        }
+
+
+        /* =========================
+           BODY
+        ========================= */
+
+        .body {
+            padding:
+                28px 26px 26px;
+
+            border-radius: 4px;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .hdr {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+            margin-bottom: 22px;
+
+            border-bottom:
+                1px dashed var(--line);
+
+            padding-bottom: 16px;
+        }
+
+
+        .hdr h1 {
+            font-size: 18px;
+
+            margin: 0;
+
+            letter-spacing: 1px;
+
+            color: var(--text);
+
+            font-weight: 600;
+        }
+
+
+        .hdr h1 span {
+            color: var(--amber);
+        }
+
+
+        .hdr .stamp {
+            font-size: 11px;
+
+            color: var(--text-dim);
+
+            margin-right: auto;
+        }
+
+
+        .status-inline {
+            font-size: 11px;
+
+            color: var(--text-dim);
+
+            letter-spacing: 0.5px;
+
+            white-space: nowrap;
+        }
+
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background:
+                var(--amber);
+
+            box-shadow:
+                0 0 0 0 rgba(255,184,77,0.6);
+
+            animation:
+                pulse 1.6s infinite;
+
+            flex-shrink: 0;
+        }
+
+
+        .pulse.ready {
+            background:
+                var(--green);
+
+            animation: none;
+        }
+
+
+        @keyframes pulse {
+
+            0% {
+                box-shadow:
+                    0 0 0 0
+                    rgba(255,184,77,0.5);
+            }
+
+            70% {
+                box-shadow:
+                    0 0 0 8px
+                    rgba(255,184,77,0);
+            }
+
+            100% {
+                box-shadow:
+                    0 0 0 0
+                    rgba(255,184,77,0);
+            }
+
+        }
+
+
+        /* =========================
+           PROGRESS
+        ========================= */
+
+        .progress-wrap {
+            margin-bottom: 20px;
+        }
+
+
+        .progress-track {
+            height: 6px;
+
+            width: 100%;
+
+            background:
+                var(--panel-2);
+
+            border:
+                1px solid var(--line);
+
+            border-radius: 3px;
+
+            overflow: hidden;
+        }
+
+
+        .progress-fill {
+            height: 100%;
+
+            width: 0%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--amber-dim),
+                    var(--amber)
+                );
+
+            transition:
+                width 0.2s linear;
+        }
+
+
+        .progress-labels {
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 11px;
+
+            color: var(--text-dim);
+
+            margin-top: 8px;
+        }
+
+
+        /* =========================
+           BUTTON
+        ========================= */
+
+        button.main-btn {
+            width: 100%;
+
+            padding: 14px;
+
+            font-family: var(--mono);
+
+            font-size: 13px;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+            background:
+                var(--panel-2);
+
+            color:
+                var(--text-dim);
+
+            border:
+                1px solid var(--line);
+
+            border-radius: 3px;
+
+            cursor: not-allowed;
+
+            transition:
+                all 0.25s ease;
+        }
+
+
+        button.main-btn.ready {
+            color: #0a0e12;
+
+            background:
+                var(--green);
+
+            border-color:
+                var(--green);
+
+            cursor: pointer;
+
+            box-shadow:
+                0 0 24px
+                rgba(111,224,138,0.25);
+        }
+
+
+        button.main-btn.ready:hover {
+            filter:
+                brightness(1.08);
+        }
+
+
+        /* =========================
+           KEY OUTPUT
+        ========================= */
+
+        .key-out {
+            display: none;
+
+            margin-top: 20px;
+
+            padding: 16px;
+
+            background:
+                var(--panel-2);
+
+            border:
+                1px solid var(--green);
+
+            border-radius: 3px;
+        }
+
+
+        .key-out.show {
+            display: block;
+        }
+
+
+        .key-out .k-label {
+            font-size: 11px;
+
+            color:
+                var(--text-dim);
+
+            letter-spacing: 1px;
+
+            margin-bottom: 8px;
+
+            text-transform: uppercase;
+        }
+
+
+        .key-row {
+            display: flex;
+
+            gap: 8px;
+        }
+
+
+        .key-row input {
+            flex: 1;
+
+            min-width: 0;
+
+            font-family: var(--mono);
+
+            font-size: 16px;
+
+            letter-spacing: 2px;
+
+            background:
+                var(--bg);
+
+            color:
+                var(--green);
+
+            border:
+                1px solid var(--line);
+
+            border-radius: 3px;
+
+            padding:
+                10px 12px;
+        }
+
+
+        .key-row button {
+            font-family: var(--mono);
+
+            font-size: 11px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+
+            background:
+                transparent;
+
+            color:
+                var(--amber);
+
+            border:
+                1px solid var(--amber-dim);
+
+            border-radius: 3px;
+
+            padding:
+                0 16px;
+
+            cursor: pointer;
+        }
+
+
+        .key-row button:hover {
+            background:
+                rgba(255,184,77,0.08);
+        }
+
+
+        /* =========================
+           FOOTNOTE
+        ========================= */
+
+        .footnote {
+            margin-top: 18px;
+
+            font-size: 10.5px;
+
+            color:
+                var(--text-dim);
+
+            text-align: center;
+
+            letter-spacing: 0.5px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .body {
+                padding:
+                    22px 18px 20px;
+            }
+
+            .key-row {
+                flex-direction: column;
+            }
+
+            .key-row button {
+                height: 40px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div id="bg-image"></div>
+
+<canvas id="bg-canvas"></canvas>
+
+
+<div class="console">
+
+
+    <!-- TITLE BAR -->
+
+    <div class="titlebar">
+
+        <div class="label">
+            Minecraft Key System
+        </div>
+
+        <div class="dots">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+    </div>
+
+
+    <!-- BODY -->
+
+    <div class="body">
+
+
+        <!-- HEADER -->
+
+        <div class="hdr">
+
+            <div
+                class="pulse"
+                id="pulse">
+            </div>
+
+
+            <h1>
+                Server Minecraft
+                <span>Key</span>
+            </h1>
+
+
+            <div class="stamp">
+                VERIFY
+            </div>
+
+
+            <div
+                class="status-inline"
+                id="statusText">
+
+                Đang xác minh...
+
+            </div>
+
+        </div>
+
+
+        <!-- PROGRESS -->
+
+        <div class="progress-wrap">
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-fill"
+                    id="progressFill">
+                </div>
+
+            </div>
+
+
+            <div class="progress-labels">
+
+                <span>
+                    0s
+                </span>
+
+                <span id="countdownLabel">
+                    10s
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTON -->
+
+        <button
+            class="main-btn"
+            id="mainBtn"
+            disabled>
+
+            ĐANG CHỜ...
+
+        </button>
+
+
+        <!-- KEY -->
+
+        <div
+            class="key-out"
+            id="keyOut">
+
+            <div class="k-label">
+                KEY
+            </div>
+
+
+            <div class="key-row">
+
+                <input
+                    type="text"
+                    id="keyValue"
+                    readonly>
+
+
+                <button
+                    id="copyBtn">
+
+                    COPY
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="footnote">
+
+            Vui Lòng Không Rời Khỏi Trang
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    /* =========================
+       ELEMENTS
+    ========================= */
+
+    const mainBtn =
+        document.getElementById("mainBtn");
+
+    const keyOut =
+        document.getElementById("keyOut");
+
+    const keyValue =
+        document.getElementById("keyValue");
+
+    const copyBtn =
+        document.getElementById("copyBtn");
+
+    const progressFill =
+        document.getElementById("progressFill");
+
+    const countdownLabel =
+        document.getElementById("countdownLabel");
+
+    const statusText =
+        document.getElementById("statusText");
+
+    const pulse =
+        document.getElementById("pulse");
+
+
+    /* =========================
+       COUNTDOWN
+    ========================= */
+
+    let seconds = 10;
+
+    const timer = setInterval(() => {
+
+        seconds--;
+
+        const progress =
+            ((10 - seconds) / 10) * 100;
+
+
+        progressFill.style.width =
+            progress + "%";
+
+
+        countdownLabel.textContent =
+            Math.max(seconds, 0) + "s";
+
+
+        if (seconds <= 0) {
+
+            clearInterval(timer);
+
+
+            mainBtn.disabled =
+                false;
+
+
+            mainBtn.classList.add(
+                "ready"
+            );
+
+
+            mainBtn.textContent =
+                "NHẬN KEY";
+
+
+            statusText.textContent =
+                "Đã xác minh";
+
+
+            pulse.classList.add(
+                "ready"
+            );
+
+        }
+
+    }, 1000);
+
+
+
+    /* =========================
+       GET KEY FROM SERVER
+       SERVER SẼ ĐỌC keys.json
+    ========================= */
+
+    mainBtn.addEventListener(
+        "click",
+        async () => {
+
+            mainBtn.disabled =
+                true;
+
+
+            mainBtn.classList.remove(
+                "ready"
+            );
+
+
+            mainBtn.textContent =
+                "ĐANG LẤY KEY...";
+
+
+            statusText.textContent =
+                "Đang lấy KEY...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/get-key",
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "HTTP " +
+                        response.status
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                /* =========================
+                   HẾT KEY
+                ========================= */
+
+                if (
+                    !data.success ||
+                    !data.key
+                ) {
+
+                    mainBtn.textContent =
+                        "HẾT KEY";
+
+
+                    statusText.textContent =
+                        "Không còn KEY";
+
+
+                    return;
+                }
+
+
+                /* =========================
+                   HIỂN THỊ KEY
+                ========================= */
+
+                keyValue.value =
+                    data.key;
+
+
+                keyOut.classList.add(
+                    "show"
+                );
+
+
+                mainBtn.textContent =
+                    "ĐÃ NHẬN KEY";
+
+
+                statusText.textContent =
+                    "KEY đã được cấp";
+
+
+                pulse.classList.add(
+                    "ready"
+                );
+
+            }
+
+
+            catch (error) {
+
+                console.error(
+                    "Get key error:",
+                    error
+                );
+
+
+                mainBtn.disabled =
+                    false;
+
+
+                mainBtn.classList.add(
+                    "ready"
+                );
+
+
+                mainBtn.textContent =
+                    "THỬ LẠI";
+
+
+                statusText.textContent =
+                    "Lỗi kết nối server";
+
+            }
+
+        }
+    );
+
+
+
+    /* =========================
+       COPY KEY
+    ========================= */
+
+    copyBtn.addEventListener(
+        "click",
+        async () => {
+
+            if (!keyValue.value) {
+                return;
+            }
+
+
+            try {
+
+                await navigator
+                    .clipboard
+                    .writeText(
+                        keyValue.value
+                    );
+
+
+                copyBtn.textContent =
+                    "ĐÃ COPY";
+
+            }
+
+
+            catch (error) {
+
+                keyValue.select();
+
+                document.execCommand(
+                    "copy"
+                );
+
+
+                copyBtn.textContent =
+                    "ĐÃ COPY";
+
+            }
+
+
+            setTimeout(() => {
+
+                copyBtn.textContent =
+                    "COPY";
+
+            }, 1500);
+
+        }
+    );
+
+
+
+    /* =========================
+       STARFIELD
+    ========================= */
+
+    const canvas =
+        document.getElementById(
+            "bg-canvas"
+        );
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    let stars = [];
+
+
+    function resizeCanvas() {
+
+        canvas.width =
+            window.innerWidth;
+
+        canvas.height =
+            window.innerHeight;
+
+        createStars();
+
+    }
+
+
+    function createStars() {
+
+        stars = [];
+
+
+        const amount =
+            Math.min(
+                120,
+                Math.floor(
+                    window.innerWidth *
+                    window.innerHeight /
+                    10000
+                )
+            );
+
+
+        for (
+            let i = 0;
+            i < amount;
+            i++
+        ) {
+
+            stars.push({
+
+                x:
+                    Math.random() *
+                    canvas.width,
+
+                y:
+                    Math.random() *
+                    canvas.height,
+
+                size:
+                    Math.random() *
+                    1.5,
+
+                speed:
+                    Math.random() *
+                    0.15 +
+                    0.03,
+
+                opacity:
+                    Math.random() *
+                    0.5 +
+                    0.2
+
+            });
+
+        }
+
+    }
+
+
+    function drawStars() {
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        for (const star of stars) {
+
+            star.y += star.speed;
+
+
+            if (
+                star.y >
+                canvas.height
+            ) {
+
+                star.y = 0;
+
+                star.x =
+                    Math.random() *
+                    canvas.width;
+
+            }
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                star.x,
+                star.y,
+                star.size,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                `rgba(
+                    255,
+                    255,
+                    255,
+                    ${star.opacity}
+                )`;
+
+
+            ctx.fill();
+
+        }
+
+
+        requestAnimationFrame(
+            drawStars
+        );
+
+    }
+
+
+    window.addEventListener(
+        "resize",
+        resizeCanvas
+    );
+
+
+    resizeCanvas();
+
+    drawStars();
+
+</script>
+
+
+</body>
+
+</html>
