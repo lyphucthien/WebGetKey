@@ -3,39 +3,27 @@ const path = require("path");
 
 exports.handler = async function () {
     try {
-        const keysFile = path.join(
-            process.cwd(),
-            "keys.json"
+        const keysPath = path.join(process.cwd(), "keys.json");
+
+        const keys = JSON.parse(
+            fs.readFileSync(keysPath, "utf8")
         );
 
-        const data = JSON.parse(
-            fs.readFileSync(keysFile, "utf8")
-        );
-
-        if (!data.keys || data.keys.length === 0) {
+        if (!Array.isArray(keys) || keys.length === 0) {
             return {
-                statusCode: 200,
+                statusCode: 404,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     success: false,
-                    message: "Hết KEY"
+                    error: "No keys available"
                 })
             };
         }
 
-        // Lấy KEY đầu tiên
-        const key = data.keys.shift();
-
-        // Lưu lại
-        fs.writeFileSync(
-            keysFile,
-            JSON.stringify(data, null, 2),
-            "utf8"
-        );
-
-        console.log("[KEY] Đã cấp:", key);
+        // Lấy key đầu tiên
+        const key = keys[0];
 
         return {
             statusCode: 200,
@@ -49,8 +37,7 @@ exports.handler = async function () {
         };
 
     } catch (error) {
-
-        console.error("[ERROR]", error);
+        console.error("Get key error:", error);
 
         return {
             statusCode: 500,
@@ -59,7 +46,7 @@ exports.handler = async function () {
             },
             body: JSON.stringify({
                 success: false,
-                message: "Lỗi server"
+                error: error.message
             })
         };
     }
