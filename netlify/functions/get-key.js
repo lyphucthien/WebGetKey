@@ -4,20 +4,23 @@ const { getStore } = require("@netlify/blobs");
 
 const MAX_RETRIES = 10;
 
-exports.handler = async function () {
+function getClientIp(event) {
+    const fwd = (event.headers && event.headers["x-forwarded-for"]) || "";
+    return (
+        fwd.split(",")[0].trim() ||
+        (event.headers && event.headers["x-nf-client-connection-ip"]) ||
+        "unknown"
+    );
+}
+
+exports.handler = async function (event) {
     try {
-        // Đọc danh sách key gốc
+        const ip = getClientIp(event);
         const keysPath = path.join(process.cwd(), "keys.json");
 
         const keysData = JSON.parse(
             fs.readFileSync(keysPath, "utf8")
         );
-
-        // keys.json phải là:
-        // [
-        //   "MINECRAFT-ABCDEF-123456",
-        //   "MINECRAFT-GHIJKL-789012"
-        // ]
 
         if (!Array.isArray(keysData)) {
             throw new Error("keys.json must contain an array of keys");
@@ -45,6 +48,27 @@ exports.handler = async function () {
             name: "minecraft-key-claims",
             consistency: "strong"
         });
+
+        // Netlify Blobs lưu các IP đã nhận key
+        const ipStore = getStore({
+            name: "minecraft-key-ip-claims",
+            consistency: "strong"
+        });
+
+        const alreadyClaimedByIp = await ipStore.get(ip);
+
+        if (alreadyClaimedByIp) {
+            return {
+                statusCode: 200,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    success: false,
+                    error: "IP này đã nhận KEY rồi"
+                })
+            };
+        }
 
         /*
          * Retry để xử lý trường hợp:
@@ -125,6 +149,9 @@ exports.handler = async function () {
 
             // Claim thành công
             if (result.modified) {
+
+                await ipStore.set(ip, availableKey);
+
                 return {
                     statusCode: 200,
                     headers: {
