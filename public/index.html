@@ -2,7 +2,6 @@
 <html lang="vi">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,7 +9,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Minecraft Key</title>
+    <title>Get Key Minecraft</title>
 
     <style>
 
@@ -27,6 +26,10 @@
             --amber-dim: #a8752e;
 
             --green: #6fe08a;
+
+            --purple: #8b6cf7;
+            --purple-2: #6c4ce0;
+            --purple-glow: rgba(139,108,247,0.35);
 
             --mono:
                 Consolas,
@@ -173,10 +176,10 @@
 
             border: 1px solid var(--line);
 
-            border-radius: 4px;
+            border-radius: 22px;
 
             box-shadow:
-                0 0 0 1px rgba(255,184,77,0.04),
+                0 0 0 1px rgba(139,108,247,0.08),
                 0 20px 60px rgba(0,0,0,0.6);
 
             backdrop-filter: blur(8px);
@@ -203,7 +206,7 @@
                 var(--panel-2);
 
             border-radius:
-                4px 4px 0 0;
+                22px 22px 0 0;
         }
 
 
@@ -379,7 +382,7 @@
             border:
                 1px solid var(--line);
 
-            border-radius: 3px;
+            border-radius: 6px;
 
             overflow: hidden;
         }
@@ -441,7 +444,7 @@
             border:
                 1px solid var(--line);
 
-            border-radius: 3px;
+            border-radius: 14px;
 
             cursor: not-allowed;
 
@@ -451,19 +454,23 @@
 
 
         button.main-btn.ready {
-            color: #0a0e12;
+            color: #ffffff;
 
             background:
-                var(--green);
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--purple-2)
+                );
 
             border-color:
-                var(--green);
+                var(--purple-2);
 
             cursor: pointer;
 
             box-shadow:
                 0 0 24px
-                rgba(111,224,138,0.25);
+                var(--purple-glow);
         }
 
 
@@ -488,9 +495,9 @@
                 var(--panel-2);
 
             border:
-                1px solid var(--green);
+                1px solid var(--purple);
 
-            border-radius: 3px;
+            border-radius: 16px;
         }
 
 
@@ -535,12 +542,12 @@
                 var(--bg);
 
             color:
-                var(--green);
+                var(--purple);
 
             border:
                 1px solid var(--line);
 
-            border-radius: 3px;
+            border-radius: 10px;
 
             padding:
                 10px 12px;
@@ -557,26 +564,34 @@
             text-transform: uppercase;
 
             background:
-                transparent;
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--purple-2)
+                );
 
             color:
-                var(--amber);
+                #ffffff;
 
             border:
-                1px solid var(--amber-dim);
+                1px solid var(--purple-2);
 
-            border-radius: 3px;
+            border-radius: 10px;
 
             padding:
                 0 16px;
 
             cursor: pointer;
+
+            box-shadow:
+                0 0 16px
+                var(--purple-glow);
         }
 
 
         .key-row button:hover {
-            background:
-                rgba(255,184,77,0.08);
+            filter:
+                brightness(1.1);
         }
 
 
@@ -762,7 +777,6 @@
 
         </div>
 
-
         <!-- FOOTER -->
 
         <div class="footnote">
@@ -807,7 +821,6 @@
     const pulse =
         document.getElementById("pulse");
 
-
     /* =========================
        COUNTDOWN
     ========================= */
@@ -815,42 +828,32 @@
     let seconds = 10;
 
     const timer = setInterval(() => {
-
         seconds--;
 
         const progress =
             ((10 - seconds) / 10) * 100;
 
-
         progressFill.style.width =
             progress + "%";
-
 
         countdownLabel.textContent =
             Math.max(seconds, 0) + "s";
 
-
         if (seconds <= 0) {
-
             clearInterval(timer);
-
 
             mainBtn.disabled =
                 false;
-
 
             mainBtn.classList.add(
                 "ready"
             );
 
-
             mainBtn.textContent =
                 "NHẬN KEY";
 
-
             statusText.textContent =
                 "Đã xác minh";
-
 
             pulse.classList.add(
                 "ready"
@@ -860,7 +863,25 @@
 
     }, 1000);
 
+    /* =========================
+       CHỐNG F5 XIN KEY MỚI
+       Nếu trình duyệt này đã nhận key trước đó -> hiện lại key cũ
+    ========================= */
 
+    const savedKey = localStorage.getItem("issued_key");
+
+    if (savedKey) {
+
+        keyValue.value = savedKey;
+        keyOut.classList.add("show");
+        
+        mainBtn.disabled = true;
+        mainBtn.textContent = "ĐÃ NHẬN KEY";
+
+        statusText.textContent = "KEY đã được cấp";
+        pulse.classList.add("ready");
+
+    }
 
     /* =========================
        GET KEY FROM SERVER
@@ -882,11 +903,8 @@
 
             mainBtn.textContent =
                 "ĐANG LẤY KEY...";
-
-
             statusText.textContent =
                 "Đang lấy KEY...";
-
 
             try {
 
@@ -902,7 +920,6 @@
                         }
                     );
 
-
                 if (!response.ok) {
 
                     throw new Error(
@@ -912,10 +929,8 @@
 
                 }
 
-
                 const data =
                     await response.json();
-
 
                 /* =========================
                    HẾT KEY
@@ -936,14 +951,19 @@
 
                     return;
                 }
-
-
+                
                 /* =========================
                    HIỂN THỊ KEY
                 ========================= */
 
                 keyValue.value =
                     data.key;
+
+
+                localStorage.setItem(
+                    "issued_key",
+                    data.key
+                );
 
 
                 keyOut.classList.add(
@@ -995,12 +1015,6 @@
         }
     );
 
-
-
-    /* =========================
-       COPY KEY
-    ========================= */
-
     copyBtn.addEventListener(
         "click",
         async () => {
@@ -1008,7 +1022,6 @@
             if (!keyValue.value) {
                 return;
             }
-
 
             try {
 
@@ -1023,7 +1036,6 @@
                     "ĐÃ COPY";
 
             }
-
 
             catch (error) {
 
@@ -1049,12 +1061,6 @@
 
         }
     );
-
-
-
-    /* =========================
-       STARFIELD
-    ========================= */
 
     const canvas =
         document.getElementById(
