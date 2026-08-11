@@ -839,27 +839,20 @@
         countdownLabel.textContent =
             Math.max(seconds, 0) + "s";
 
-        if (seconds <= 0) {
-            clearInterval(timer);
+	if (seconds <= 0) {
+    	clearInterval(timer);
 
-            mainBtn.disabled =
-                false;
+    	mainBtn.disabled = false;
 
-            mainBtn.classList.add(
-                "ready"
-            );
+    	mainBtn.classList.add("ready");
 
-            mainBtn.textContent =
-                "NHẬN KEY";
+    	mainBtn.textContent = "NHẬN KEY";
 
-            statusText.textContent =
-                "Đã xác minh";
+    	statusText.textContent =
+        	"Sẵn sàng nhận KEY";
 
-            pulse.classList.add(
-                "ready"
-            );
-
-        }
+   	pulse.classList.add("ready");
+	}
 
     }, 1000);
 
