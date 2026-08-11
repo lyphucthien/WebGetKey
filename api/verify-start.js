@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+
 const SECRET = process.env.VERIFY_SECRET;
 
 if (!SECRET) {
@@ -15,14 +16,18 @@ module.exports = async (req, res) => {
             .digest("hex");
 
         const token = `${ts}.${sig}`;
-
-        const proto =
-            req.headers["x-forwarded-proto"] || "https";
-
-        const host = req.headers.host;
+        const cookie = [
+            `verify_token=${encodeURIComponent(token)}`,
+            "Max-Age=900",
+            "Path=/",
+            "HttpOnly",
+            "Secure",
+            "SameSite=Lax"
+        ].join("; ");
 
         res.writeHead(302, {
-            Location: `${proto}://${host}/?token=${encodeURIComponent(token)}`
+            "Set-Cookie": cookie,
+            "Location": "/"
         });
 
         res.end();

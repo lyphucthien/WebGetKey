@@ -3,8 +3,8 @@ const path = require("path");
 const crypto = require("crypto");
 const { kv } = require("@vercel/kv");
 
-const MAX_RETRIES = 10;
 const SECRET = process.env.VERIFY_SECRET;
+
 const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 
 if (!SECRET) {
@@ -61,13 +61,44 @@ function getClientIp(req) {
     );
 }
 
+function getCookie(req, name) {
+    const cookieHeader = req.headers.cookie;
+
+    if (!cookieHeader) {
+        return null;
+    }
+
+    const cookies = cookieHeader.split(";");
+
+    for (const cookie of cookies) {
+        const [key, ...valueParts] = cookie.trim().split("=");
+
+        if (key === name) {
+            return decodeURIComponent(valueParts.join("="));
+        }
+    }
+
+    return null;
+}
+
 module.exports = async (req, res) => {
     try {
+
         // =====================================
         // 1. LẤY TOKEN
         // =====================================
 
-        const token = req.query?.token;
+        let token = req.query?.token;
+
+        // Nếu không có token trên URL,
+        // lấy token từ cookie
+        if (!token) {
+            token = getCookie(req, "verify_token");
+        }
+
+        // =====================================
+        // 2. KIỂM TRA TOKEN
+        // =====================================
 
         if (!isValidToken(token)) {
             return res.status(403).json({
@@ -77,13 +108,13 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 2. LẤY IP
+        // 3. LẤY IP
         // =====================================
 
         const ip = getClientIp(req);
 
         // =====================================
-        // 3. KIỂM TRA TOKEN ĐÃ DÙNG CHƯA
+        // 4. TOKEN ĐÃ DÙNG?
         // =====================================
 
         const tokenKey = `used-token:${token}`;
@@ -98,7 +129,7 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 4. KIỂM TRA IP
+        // 5. IP ĐÃ NHẬN KEY?
         // =====================================
 
         const ipKey = `ip:${ip}`;
@@ -114,7 +145,7 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 5. ĐỌC keys.json
+        // 6. ĐỌC KEYS.JSON
         // =====================================
 
         const keysPath = path.join(
@@ -144,14 +175,11 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 6. TÌM KEY CHƯA CLAIM
+        // 7. TÌM KEY CHƯA ĐƯỢC CLAIM
         // =====================================
 
-        for (
-            let attempt = 0;
-            attempt < MAX_RETRIES;
-            attempt++
-        ) {
+        for (let attempt = 0; attempt < 10; attempt++) {
+
             const claimedKeys =
                 (await kv.get("claimed-keys")) || [];
 
@@ -172,7 +200,7 @@ module.exports = async (req, res) => {
             ];
 
             // =====================================
-            // 7. LƯU KEY + IP + TOKEN
+            // 8. LƯU DỮ LIỆU
             // =====================================
 
             await kv.set(
@@ -185,7 +213,7 @@ module.exports = async (req, res) => {
                 availableKey
             );
 
-            // Token chỉ sử dụng 1 lần
+            // Token chỉ được sử dụng 1 lần
             await kv.set(
                 tokenKey,
                 true,
@@ -194,8 +222,14 @@ module.exports = async (req, res) => {
                 }
             );
 
+            // Xóa cookie sau khi nhận KEY
+            res.setHeader(
+                "Set-Cookie",
+                "verify_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+            );
+
             // =====================================
-            // 8. TRẢ KEY
+            // 9. TRẢ KEY
             // =====================================
 
             return res.status(200).json({
@@ -204,16 +238,13 @@ module.exports = async (req, res) => {
             });
         }
 
-        // =====================================
-        // 9. SERVER BẬN
-        // =====================================
-
         return res.status(503).json({
             success: false,
             error: "Server is busy, please try again"
         });
 
     } catch (error) {
+
         console.error(
             "Get key error:",
             error
