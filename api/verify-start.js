@@ -1,26 +1,38 @@
 const crypto = require("crypto");
+const SECRET = process.env.VERIFY_SECRET;
 
-// Đổi chuỗi bí mật này, và đặt trùng giá trị vào biến môi trường
-// VERIFY_SECRET trên Vercel (Project Settings -> Environment Variables)
-const SECRET = process.env.VERIFY_SECRET || "doi-chuoi-bi-mat-nay";
+if (!SECRET) {
+    throw new Error("VERIFY_SECRET is not configured");
+}
 
 module.exports = async (req, res) => {
+    try {
+        const ts = Date.now().toString();
 
-    const ts = Date.now().toString();
+        const sig = crypto
+            .createHmac("sha256", SECRET)
+            .update(ts)
+            .digest("hex");
 
-    const sig = crypto
-        .createHmac("sha256", SECRET)
-        .update(ts)
-        .digest("hex");
+        const token = `${ts}.${sig}`;
 
-    const token = `${ts}.${sig}`;
+        const proto =
+            req.headers["x-forwarded-proto"] || "https";
 
-    const proto = req.headers["x-forwarded-proto"] || "https";
-    const host = req.headers.host;
+        const host = req.headers.host;
 
-    res.writeHead(302, {
-        Location: `${proto}://${host}/?token=${token}`
-    });
+        res.writeHead(302, {
+            Location: `${proto}://${host}/?token=${encodeURIComponent(token)}`
+        });
 
-    res.end();
+        res.end();
+
+    } catch (error) {
+        console.error("Verify start error:", error);
+
+        res.status(500).json({
+            success: false,
+            error: "Unable to create verification token"
+        });
+    }
 };

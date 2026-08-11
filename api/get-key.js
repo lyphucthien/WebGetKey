@@ -4,20 +4,31 @@ const crypto = require("crypto");
 const { kv } = require("@vercel/kv");
 
 const MAX_RETRIES = 10;
-
-// PHẢI TRÙNG với secret trong api/verify-start.js
-const SECRET = process.env.VERIFY_SECRET || "doi-chuoi-bi-mat-nay";
-
-// Token có hiệu lực trong 15 phút kể từ lúc tạo
+const SECRET = process.env.VERIFY_SECRET;
 const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 
+if (!SECRET) {
+    throw new Error("VERIFY_SECRET is not configured");
+}
+
 function isValidToken(token) {
-    if (!token || typeof token !== "string") return false;
+    if (!token || typeof token !== "string") {
+        return false;
+    }
 
     const parts = token.split(".");
-    if (parts.length !== 2) return false;
+
+    if (parts.length !== 2) {
+        return false;
+    }
 
     const [ts, sig] = parts;
+
+    const timestamp = Number(ts);
+
+    if (!Number.isFinite(timestamp)) {
+        return false;
+    }
 
     const expectedSig = crypto
         .createHmac("sha256", SECRET)
@@ -34,15 +45,17 @@ function isValidToken(token) {
         return false;
     }
 
-    const age = Date.now() - Number(ts);
+    const age = Date.now() - timestamp;
 
     return age >= 0 && age <= TOKEN_MAX_AGE_MS;
 }
 
 function getClientIp(req) {
-    const fwd = req.headers["x-forwarded-for"] || "";
+    const forwarded =
+        req.headers["x-forwarded-for"] || "";
+
     return (
-        fwd.split(",")[0].trim() ||
+        forwarded.split(",")[0].trim() ||
         req.socket?.remoteAddress ||
         "unknown"
     );
@@ -50,17 +63,73 @@ function getClientIp(req) {
 
 module.exports = async (req, res) => {
     try {
+        // =====================================
+        // 1. LẤY TOKEN
+        // =====================================
+
+        const token = req.query?.token;
+
+        if (!isValidToken(token)) {
+            return res.status(403).json({
+                success: false,
+                error: "Token không hợp lệ hoặc đã hết hạn"
+            });
+        }
+
+        // =====================================
+        // 2. LẤY IP
+        // =====================================
+
         const ip = getClientIp(req);
 
-        // Đọc danh sách key gốc
-        const keysPath = path.join(process.cwd(), "keys.json");
+        // =====================================
+        // 3. KIỂM TRA TOKEN ĐÃ DÙNG CHƯA
+        // =====================================
+
+        const tokenKey = `used-token:${token}`;
+
+        const alreadyUsed = await kv.get(tokenKey);
+
+        if (alreadyUsed) {
+            return res.status(403).json({
+                success: false,
+                error: "Token này đã được sử dụng"
+            });
+        }
+
+        // =====================================
+        // 4. KIỂM TRA IP
+        // =====================================
+
+        const ipKey = `ip:${ip}`;
+
+        const alreadyClaimedByIp =
+            await kv.get(ipKey);
+
+        if (alreadyClaimedByIp) {
+            return res.status(200).json({
+                success: false,
+                error: "IP này đã nhận KEY rồi"
+            });
+        }
+
+        // =====================================
+        // 5. ĐỌC keys.json
+        // =====================================
+
+        const keysPath = path.join(
+            process.cwd(),
+            "keys.json"
+        );
 
         const keysData = JSON.parse(
             fs.readFileSync(keysPath, "utf8")
         );
 
         if (!Array.isArray(keysData)) {
-            throw new Error("keys.json must contain an array of keys");
+            throw new Error(
+                "keys.json must contain an array of keys"
+            );
         }
 
         const keys = keysData
@@ -68,26 +137,21 @@ module.exports = async (req, res) => {
             .filter(Boolean);
 
         if (keys.length === 0) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 error: "No keys available"
             });
-            return;
         }
 
-        // Kiểm tra IP đã nhận key chưa (lưu trên Vercel KV)
-        const alreadyClaimedByIp = await kv.get(`ip:${ip}`);
+        // =====================================
+        // 6. TÌM KEY CHƯA CLAIM
+        // =====================================
 
-        if (alreadyClaimedByIp) {
-            res.status(200).json({
-                success: false,
-                error: "IP này đã nhận KEY rồi"
-            });
-            return;
-        }
-
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-
+        for (
+            let attempt = 0;
+            attempt < MAX_RETRIES;
+            attempt++
+        ) {
             const claimedKeys =
                 (await kv.get("claimed-keys")) || [];
 
@@ -96,11 +160,10 @@ module.exports = async (req, res) => {
             );
 
             if (!availableKey) {
-                res.status(404).json({
+                return res.status(404).json({
                     success: false,
                     error: "All keys have been claimed"
                 });
-                return;
             }
 
             const updatedClaims = [
@@ -108,25 +171,55 @@ module.exports = async (req, res) => {
                 availableKey
             ];
 
-            await kv.set("claimed-keys", updatedClaims);
-            await kv.set(`ip:${ip}`, availableKey);
+            // =====================================
+            // 7. LƯU KEY + IP + TOKEN
+            // =====================================
 
-            res.status(200).json({
+            await kv.set(
+                "claimed-keys",
+                updatedClaims
+            );
+
+            await kv.set(
+                ipKey,
+                availableKey
+            );
+
+            // Token chỉ sử dụng 1 lần
+            await kv.set(
+                tokenKey,
+                true,
+                {
+                    ex: 15 * 60
+                }
+            );
+
+            // =====================================
+            // 8. TRẢ KEY
+            // =====================================
+
+            return res.status(200).json({
                 success: true,
                 key: availableKey
             });
-            return;
         }
 
-        res.status(503).json({
+        // =====================================
+        // 9. SERVER BẬN
+        // =====================================
+
+        return res.status(503).json({
             success: false,
             error: "Server is busy, please try again"
         });
 
     } catch (error) {
-        console.error("Get key error:", error);
+        console.error(
+            "Get key error:",
+            error
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error: error.message
         });
