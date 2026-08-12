@@ -7,6 +7,9 @@ const SECRET = process.env.VERIFY_SECRET;
 
 const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 
+// Khớp với cooldown 2 tiếng 50 phút bên frontend
+const IP_LOCK_SECONDS = (2 * 60 * 60 + 50 * 60); // 10200s
+
 if (!SECRET) {
     throw new Error("VERIFY_SECRET is not configured");
 }
@@ -210,7 +213,10 @@ module.exports = async (req, res) => {
 
             await kv.set(
                 ipKey,
-                availableKey
+                availableKey,
+                {
+                    ex: IP_LOCK_SECONDS
+                }
             );
 
             // Token chỉ được sử dụng 1 lần
