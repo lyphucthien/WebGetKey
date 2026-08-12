@@ -148,47 +148,52 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 6. ĐỌC KEYS.JSON
+        // 6. LẤY DANH SÁCH KEY CÒN LẠI TỪ KV
+        //    (nạp từ keys.json nếu KV chưa có)
         // =====================================
 
-        const keysPath = path.join(
-            process.cwd(),
-            "keys.json"
-        );
+        let keys = await kv.get("remaining-keys");
 
-        const keysData = JSON.parse(
-            fs.readFileSync(keysPath, "utf8")
-        );
-
-        if (!Array.isArray(keysData)) {
-            throw new Error(
-                "keys.json must contain an array of keys"
+        if (!keys) {
+            const keysPath = path.join(
+                process.cwd(),
+                "keys.json"
             );
-        }
 
-        const keys = keysData
-            .map(key => String(key).trim())
-            .filter(Boolean);
+            const keysData = JSON.parse(
+                fs.readFileSync(keysPath, "utf8")
+            );
+
+            if (!Array.isArray(keysData)) {
+                throw new Error(
+                    "keys.json must contain an array of keys"
+                );
+            }
+
+            keys = keysData
+                .map(key => String(key).trim())
+                .filter(Boolean);
+
+            await kv.set("remaining-keys", keys);
+        }
 
         if (keys.length === 0) {
             return res.status(404).json({
                 success: false,
-                error: "No keys available"
+                error: "All keys have been claimed"
             });
         }
 
         // =====================================
-        // 7. TÌM KEY CHƯA ĐƯỢC CLAIM
+        // 7. LẤY KEY ĐẦU TIÊN VÀ XOÁ KHỎI DANH SÁCH
         // =====================================
 
         for (let attempt = 0; attempt < 10; attempt++) {
 
-            const claimedKeys =
-                (await kv.get("claimed-keys")) || [];
+            const currentKeys =
+                (await kv.get("remaining-keys")) || [];
 
-            const availableKey = keys.find(
-                key => !claimedKeys.includes(key)
-            );
+            const availableKey = currentKeys[0];
 
             if (!availableKey) {
                 return res.status(404).json({
@@ -197,18 +202,15 @@ module.exports = async (req, res) => {
                 });
             }
 
-            const updatedClaims = [
-                ...claimedKeys,
-                availableKey
-            ];
+            const updatedKeys = currentKeys.slice(1);
 
             // =====================================
             // 8. LƯU DỮ LIỆU
             // =====================================
 
             await kv.set(
-                "claimed-keys",
-                updatedClaims
+                "remaining-keys",
+                updatedKeys
             );
 
             await kv.set(
