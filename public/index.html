@@ -822,59 +822,129 @@
         document.getElementById("pulse");
 
     /* =========================
-       COUNTDOWN
+       CHỐNG F5 / TAB ẨN DANH
+       Khóa theo THỜI GIAN THỰC: 2 tiếng 50 phút
+       (không còn đếm 10s chờ, bấm nút là gửi luôn)
     ========================= */
 
-    let seconds = 10;
+    const COOLDOWN_MS =
+        (2 * 60 * 60 + 50 * 60) * 1000; // 2h50m
 
-    const timer = setInterval(() => {
-        seconds--;
+    const STORAGE_KEY = "issued_key";
+    const STORAGE_TIME = "issued_key_time";
 
-        const progress =
-            ((10 - seconds) / 10) * 100;
+    let cooldownTimer = null;
 
-        progressFill.style.width =
-            progress + "%";
+    function formatTime(ms) {
 
-        countdownLabel.textContent =
-            Math.max(seconds, 0) + "s";
+        const totalSec =
+            Math.max(Math.ceil(ms / 1000), 0);
 
-	if (seconds <= 0) {
-    	clearInterval(timer);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
 
-    	mainBtn.disabled = false;
+        return (
+            String(h).padStart(2, "0") + ":" +
+            String(m).padStart(2, "0") + ":" +
+            String(s).padStart(2, "0")
+        );
+    }
 
-    	mainBtn.classList.add("ready");
+    // Khoá nút lại, đếm ngược tới khi được lấy KEY tiếp theo
+    function lockButton() {
 
-    	mainBtn.textContent = "NHẬN KEY";
-
-    	statusText.textContent =
-        	"Sẵn sàng nhận KEY";
-
-   	pulse.classList.add("ready");
-	}
-
-    }, 1000);
-
-    /* =========================
-       CHỐNG F5 XIN KEY MỚI
-       Nếu trình duyệt này đã nhận key trước đó -> hiện lại key cũ
-    ========================= */
-
-    const savedKey = localStorage.getItem("issued_key");
-
-    if (savedKey) {
-
-        keyValue.value = savedKey;
-        keyOut.classList.add("show");
-        
         mainBtn.disabled = true;
+        mainBtn.classList.remove("ready");
         mainBtn.textContent = "ĐÃ NHẬN KEY";
 
-        statusText.textContent = "KEY đã được cấp";
-        pulse.classList.add("ready");
+        pulse.classList.remove("ready");
 
+        if (cooldownTimer) {
+            clearInterval(cooldownTimer);
+        }
+
+        const tick = () => {
+
+            const savedTime =
+                Number(localStorage.getItem(STORAGE_TIME) || 0);
+
+            const remaining =
+                (savedTime + COOLDOWN_MS) - Date.now();
+
+            if (remaining <= 0) {
+                clearInterval(cooldownTimer);
+                unlockButton();
+                return;
+            }
+
+            const progress =
+                ((COOLDOWN_MS - remaining) / COOLDOWN_MS) * 100;
+
+            progressFill.style.width =
+                Math.min(Math.max(progress, 0), 100) + "%";
+
+            countdownLabel.textContent =
+                formatTime(remaining);
+
+            statusText.textContent =
+                "Chờ " + formatTime(remaining) + " để lấy KEY mới";
+        };
+
+        tick();
+
+        cooldownTimer = setInterval(tick, 1000);
     }
+
+    // Mở khoá nút, sẵn sàng cho bấm gửi lấy KEY ngay lập tức
+    function unlockButton() {
+
+        if (cooldownTimer) {
+            clearInterval(cooldownTimer);
+        }
+
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_TIME);
+
+        keyOut.classList.remove("show");
+        keyValue.value = "";
+
+        progressFill.style.width = "0%";
+        countdownLabel.textContent = "00:00:00";
+
+        mainBtn.disabled = false;
+        mainBtn.classList.add("ready");
+        mainBtn.textContent = "NHẬN KEY";
+
+        statusText.textContent = "Sẵn sàng nhận KEY";
+
+        pulse.classList.add("ready");
+    }
+
+    // Kiểm tra trạng thái ngay khi tải trang
+    // (chống F5 và tab ẩn danh dựa theo mốc thời gian đã lưu)
+    (function initState() {
+
+        const savedKey = localStorage.getItem(STORAGE_KEY);
+
+        const savedTime =
+            Number(localStorage.getItem(STORAGE_TIME) || 0);
+
+        const elapsed = Date.now() - savedTime;
+
+        if (savedKey && savedTime && elapsed < COOLDOWN_MS) {
+
+            keyValue.value = savedKey;
+            keyOut.classList.add("show");
+
+            lockButton();
+
+        } else {
+
+            unlockButton();
+        }
+
+    })();
 
     /* =========================
        GET KEY FROM SERVER
@@ -954,8 +1024,13 @@
 
 
                 localStorage.setItem(
-                    "issued_key",
+                    STORAGE_KEY,
                     data.key
+                );
+
+                localStorage.setItem(
+                    STORAGE_TIME,
+                    String(Date.now())
                 );
 
 
@@ -964,17 +1039,7 @@
                 );
 
 
-                mainBtn.textContent =
-                    "ĐÃ NHẬN KEY";
-
-
-                statusText.textContent =
-                    "KEY đã được cấp";
-
-
-                pulse.classList.add(
-                    "ready"
-                );
+                lockButton();
 
             }
 
