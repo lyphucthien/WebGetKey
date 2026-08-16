@@ -21,11 +21,39 @@ const KEY_TYPES = {
         ipPrefix: "ip"
     },
     lpthub: {
-        file: "keys-lpthub.json",
-        kvList: "remaining-keys-lpthub",
+        generated: true,
+        kvIssuedSet: "issued-set-lpthub",
         ipPrefix: "ip-lpthub"
     }
 };
+
+// Sinh 1 key dạng LPTHUB-xxxxxxxxxx (5 chữ thường + 5 số, xen ngẫu nhiên)
+function generateLpthubKey() {
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    const digits = "0123456789";
+
+    const chars = [];
+
+    for (let i = 0; i < 5; i++) {
+        chars.push(
+            letters[Math.floor(Math.random() * letters.length)]
+        );
+    }
+
+    for (let i = 0; i < 5; i++) {
+        chars.push(
+            digits[Math.floor(Math.random() * digits.length)]
+        );
+    }
+
+    // Xáo trộn vị trí (Fisher-Yates)
+    for (let i = chars.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+
+    return "LPTHUB-" + chars.join("");
+}
 
 if (!SECRET) {
     throw new Error("VERIFY_SECRET is not configured");
@@ -183,7 +211,66 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 7. LẤY DANH SÁCH KEY CÒN LẠI TỪ KV
+        // 7. LOẠI KEY TỰ SINH (VD: LPTHUB)
+        // =====================================
+
+        if (typeConfig.generated) {
+
+            let issuedKey = null;
+
+            for (let attempt = 0; attempt < 10; attempt++) {
+
+                const candidate = generateLpthubKey();
+
+                // sadd trả về 1 nếu key MỚI được thêm,
+                // 0 nếu key đã tồn tại (trùng) -> thử lại
+                const added = await kv.sadd(
+                    typeConfig.kvIssuedSet,
+                    candidate
+                );
+
+                if (added === 1) {
+                    issuedKey = candidate;
+                    break;
+                }
+            }
+
+            if (!issuedKey) {
+                return res.status(503).json({
+                    success: false,
+                    error: "Server is busy, please try again"
+                });
+            }
+
+            await kv.set(
+                ipKey,
+                issuedKey,
+                {
+                    ex: IP_LOCK_SECONDS
+                }
+            );
+
+            await kv.set(
+                tokenKey,
+                true,
+                {
+                    ex: 15 * 60
+                }
+            );
+
+            res.setHeader(
+                "Set-Cookie",
+                "verify_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+            );
+
+            return res.status(200).json({
+                success: true,
+                key: issuedKey
+            });
+        }
+
+        // =====================================
+        // 8. LẤY DANH SÁCH KEY CÒN LẠI TỪ KV
         //    (nạp từ file json nếu KV chưa có)
         // =====================================
 
@@ -220,7 +307,7 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 8. LẤY KEY ĐẦU TIÊN VÀ XOÁ KHỎI DANH SÁCH
+        // 9. LẤY KEY ĐẦU TIÊN VÀ XOÁ KHỎI DANH SÁCH
         // =====================================
 
         for (let attempt = 0; attempt < 10; attempt++) {
