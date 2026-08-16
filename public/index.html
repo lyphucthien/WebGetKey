@@ -187,60 +187,6 @@
 
 
         /* =========================
-           TITLE BAR
-        ========================= */
-
-        .titlebar {
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            padding: 10px 16px;
-
-            border-bottom:
-                1px solid var(--line);
-
-            background:
-                var(--panel-2);
-
-            border-radius:
-                22px 22px 0 0;
-        }
-
-
-        .titlebar .label {
-            font-size: 12px;
-
-            letter-spacing: 2px;
-
-            color:
-                var(--text-dim);
-
-            text-transform:
-                uppercase;
-        }
-
-
-        .dots {
-            display: flex;
-
-            gap: 6px;
-        }
-
-
-        .dots span {
-            width: 8px;
-            height: 8px;
-
-            border-radius: 50%;
-
-            background: #2a3640;
-        }
-
-
-        /* =========================
            BODY
         ========================= */
 
@@ -639,9 +585,11 @@
         ========================= */
 
         .type-toggle {
+            position: relative;
+
             display: flex;
 
-            gap: 8px;
+            gap: 0;
 
             margin-bottom: 20px;
 
@@ -652,10 +600,51 @@
             border-radius: 10px;
 
             padding: 4px;
+
+            isolation: isolate;
+        }
+
+
+        .type-toggle-indicator {
+            position: absolute;
+
+            top: 4px;
+            left: 4px;
+
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+
+            border-radius: 7px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple-2),
+                    var(--purple)
+                );
+
+            box-shadow:
+                0 0 12px var(--purple-glow);
+
+            transition:
+                transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+
+            will-change: transform;
+
+            z-index: 0;
+        }
+
+
+        .type-toggle.pos-lpthub .type-toggle-indicator {
+            transform: translateX(100%);
         }
 
 
         .type-btn {
+            position: relative;
+
+            z-index: 1;
+
             flex: 1;
 
             padding: 9px 6px;
@@ -678,22 +667,13 @@
 
             cursor: pointer;
 
-            transition: all 0.15s ease;
+            transition:
+                color 0.25s ease;
         }
 
 
         .type-btn.active {
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--purple-2),
-                    var(--purple)
-                );
-
             color: #fff;
-
-            box-shadow:
-                0 0 12px var(--purple-glow);
         }
 
 
@@ -716,34 +696,20 @@
 
 <div class="console">
 
-
-    <!-- TITLE BAR -->
-
-    <div class="titlebar">
-
-        <div class="label">
-            Minecraft Key System
-        </div>
-
-        <div class="dots">
-
-            <span></span>
-            <span></span>
-            <span></span>
-
-        </div>
-
-    </div>
-
-
     <!-- BODY -->
-
     <div class="body">
 
 
         <!-- TYPE TOGGLE -->
 
-        <div class="type-toggle">
+        <div
+            class="type-toggle"
+            id="typeToggle">
+
+            <div
+                class="type-toggle-indicator"
+                id="typeToggleIndicator">
+            </div>
 
             <button
                 class="type-btn active"
@@ -756,7 +722,7 @@
                 class="type-btn"
                 id="typeBtnLpthub"
                 data-type="lpthub">
-                LPTHUB
+                LPT HUB
             </button>
 
         </div>
@@ -912,6 +878,9 @@
     const titleText =
         document.getElementById("titleText");
 
+    const typeToggle =
+        document.getElementById("typeToggle");
+
     const typeBtnMinecraft =
         document.getElementById("typeBtnMinecraft");
 
@@ -924,7 +893,7 @@
 
     const TYPE_LABELS = {
         minecraft: "Server Minecraft",
-        lpthub: "LPTHUB Game"
+        lpthub: "Script LPTHUB"
     };
 
     let currentType = "minecraft";
@@ -1060,7 +1029,7 @@
 
     refreshState();
 
-    // Đổi loại key (MINECRAFT <-> LPTHUB)
+    // Đổi loại key (MINECRAFT <-> LPTHUB) với animation trượt
     function switchType(type) {
 
         if (type === currentType) {
@@ -1076,6 +1045,11 @@
 
         typeBtnLpthub.classList.toggle(
             "active",
+            type === "lpthub"
+        );
+
+        typeToggle.classList.toggle(
+            "pos-lpthub",
             type === "lpthub"
         );
 
