@@ -27,9 +27,9 @@ const KEY_TYPES = {
     }
 };
 
-// Sinh 1 key dạng LPTHUB-xxxxxxxxxx (5 chữ thường + 5 số, xen ngẫu nhiên)
+// Sinh 1 key dạng LPTHUB-XXXXXXXXXX (5 chữ IN HOA + 5 số, xen ngẫu nhiên)
 function generateLpthubKey() {
-    const letters = "abcdefghijklmnopqrstuvwxyz";
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const digits = "0123456789";
 
     const chars = [];
