@@ -183,7 +183,7 @@ module.exports = async (req, res) => {
         // 5. TOKEN ĐÃ DÙNG?
         // =====================================
 
-        const tokenKey = `used-token:${token}`;
+        const tokenKey = `used-token:${typeParam}:${token}`;
 
         const alreadyUsed = await kv.get(tokenKey);
 
