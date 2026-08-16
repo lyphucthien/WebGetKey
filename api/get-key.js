@@ -7,8 +7,8 @@ const SECRET = process.env.VERIFY_SECRET;
 
 const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 
-// Khớp với cooldown 2 tiếng 50 phút bên frontend
-const IP_LOCK_SECONDS = (2 * 60 * 60 + 50 * 60); // 10200s
+// Khớp với cooldown 3 tiếng bên frontend
+const IP_LOCK_SECONDS = (3 * 60 * 60); // 10800s
 
 // =====================================
 // CẤU HÌNH TỪNG LOẠI KEY
