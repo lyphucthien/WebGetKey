@@ -634,6 +634,73 @@
 
         }
 
+        /* =========================
+           TYPE TOGGLE
+        ========================= */
+
+        .type-toggle {
+            display: flex;
+
+            gap: 8px;
+
+            margin-bottom: 20px;
+
+            background: var(--panel-2);
+
+            border: 1px solid var(--line);
+
+            border-radius: 10px;
+
+            padding: 4px;
+        }
+
+
+        .type-btn {
+            flex: 1;
+
+            padding: 9px 6px;
+
+            border: none;
+
+            border-radius: 7px;
+
+            background: transparent;
+
+            color: var(--text-dim);
+
+            font-family: var(--mono);
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            letter-spacing: 0.5px;
+
+            cursor: pointer;
+
+            transition: all 0.15s ease;
+        }
+
+
+        .type-btn.active {
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple-2),
+                    var(--purple)
+                );
+
+            color: #fff;
+
+            box-shadow:
+                0 0 12px var(--purple-glow);
+        }
+
+
+        .type-btn:not(.active):hover {
+            color: var(--text);
+        }
+
     </style>
 
 </head>
@@ -674,6 +741,27 @@
     <div class="body">
 
 
+        <!-- TYPE TOGGLE -->
+
+        <div class="type-toggle">
+
+            <button
+                class="type-btn active"
+                id="typeBtnMinecraft"
+                data-type="minecraft">
+                MINECRAFT
+            </button>
+
+            <button
+                class="type-btn"
+                id="typeBtnLpthub"
+                data-type="lpthub">
+                LPTHUB
+            </button>
+
+        </div>
+
+
         <!-- HEADER -->
 
         <div class="hdr">
@@ -684,7 +772,7 @@
             </div>
 
 
-            <h1>
+            <h1 id="titleText">
                 Server Minecraft
                 <span>Key</span>
             </h1>
@@ -821,6 +909,26 @@
     const pulse =
         document.getElementById("pulse");
 
+    const titleText =
+        document.getElementById("titleText");
+
+    const typeBtnMinecraft =
+        document.getElementById("typeBtnMinecraft");
+
+    const typeBtnLpthub =
+        document.getElementById("typeBtnLpthub");
+
+    /* =========================
+       LOẠI KEY ĐANG CHỌN
+    ========================= */
+
+    const TYPE_LABELS = {
+        minecraft: "Server Minecraft",
+        lpthub: "LPTHUB Game"
+    };
+
+    let currentType = "minecraft";
+
     /* =========================
        CHỐNG F5 / TAB ẨN DANH
        Khóa theo THỜI GIAN THỰC: 2 tiếng 50 phút
@@ -830,8 +938,13 @@
     const COOLDOWN_MS =
         (2 * 60 * 60 + 50 * 60) * 1000; // 2h50m
 
-    const STORAGE_KEY = "issued_key";
-    const STORAGE_TIME = "issued_key_time";
+    function getStorageKey() {
+        return "issued_key_" + currentType;
+    }
+
+    function getStorageTimeKey() {
+        return "issued_key_time_" + currentType;
+    }
 
     let cooldownTimer = null;
 
@@ -867,7 +980,7 @@
         const tick = () => {
 
             const savedTime =
-                Number(localStorage.getItem(STORAGE_TIME) || 0);
+                Number(localStorage.getItem(getStorageTimeKey()) || 0);
 
             const remaining =
                 (savedTime + COOLDOWN_MS) - Date.now();
@@ -903,8 +1016,8 @@
             clearInterval(cooldownTimer);
         }
 
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(STORAGE_TIME);
+        localStorage.removeItem(getStorageKey());
+        localStorage.removeItem(getStorageTimeKey());
 
         keyOut.classList.remove("show");
         keyValue.value = "";
@@ -921,14 +1034,14 @@
         pulse.classList.add("ready");
     }
 
-    // Kiểm tra trạng thái ngay khi tải trang
+    // Kiểm tra trạng thái ngay khi tải trang / khi đổi loại key
     // (chống F5 và tab ẩn danh dựa theo mốc thời gian đã lưu)
-    (function initState() {
+    function refreshState() {
 
-        const savedKey = localStorage.getItem(STORAGE_KEY);
+        const savedKey = localStorage.getItem(getStorageKey());
 
         const savedTime =
-            Number(localStorage.getItem(STORAGE_TIME) || 0);
+            Number(localStorage.getItem(getStorageTimeKey()) || 0);
 
         const elapsed = Date.now() - savedTime;
 
@@ -943,8 +1056,45 @@
 
             unlockButton();
         }
+    }
 
-    })();
+    refreshState();
+
+    // Đổi loại key (MINECRAFT <-> LPTHUB)
+    function switchType(type) {
+
+        if (type === currentType) {
+            return;
+        }
+
+        currentType = type;
+
+        typeBtnMinecraft.classList.toggle(
+            "active",
+            type === "minecraft"
+        );
+
+        typeBtnLpthub.classList.toggle(
+            "active",
+            type === "lpthub"
+        );
+
+        titleText.innerHTML =
+            (TYPE_LABELS[type] || "Key") +
+            ' <span>Key</span>';
+
+        refreshState();
+    }
+
+    typeBtnMinecraft.addEventListener(
+        "click",
+        () => switchType("minecraft")
+    );
+
+    typeBtnLpthub.addEventListener(
+        "click",
+        () => switchType("lpthub")
+    );
 
     /* =========================
        GET KEY FROM SERVER
@@ -973,7 +1123,8 @@
 
                 const response =
                     await fetch(
-                        "/api/get-key",
+                        "/api/get-key?type=" +
+                            encodeURIComponent(currentType),
                         {
                             method: "GET",
                             headers: {
@@ -1024,12 +1175,12 @@
 
 
                 localStorage.setItem(
-                    STORAGE_KEY,
+                    getStorageKey(),
                     data.key
                 );
 
                 localStorage.setItem(
-                    STORAGE_TIME,
+                    getStorageTimeKey(),
                     String(Date.now())
                 );
 

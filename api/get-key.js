@@ -10,6 +10,23 @@ const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 // Khớp với cooldown 2 tiếng 50 phút bên frontend
 const IP_LOCK_SECONDS = (2 * 60 * 60 + 50 * 60); // 10200s
 
+// =====================================
+// CẤU HÌNH TỪNG LOẠI KEY
+// =====================================
+
+const KEY_TYPES = {
+    minecraft: {
+        file: "keys.json",
+        kvList: "remaining-keys",
+        ipPrefix: "ip"
+    },
+    lpthub: {
+        file: "keys-lpthub.json",
+        kvList: "remaining-keys-lpthub",
+        ipPrefix: "ip-lpthub"
+    }
+};
+
 if (!SECRET) {
     throw new Error("VERIFY_SECRET is not configured");
 }
@@ -88,7 +105,25 @@ module.exports = async (req, res) => {
     try {
 
         // =====================================
-        // 1. LẤY TOKEN
+        // 1. LẤY LOẠI KEY (type)
+        // =====================================
+
+        const typeParam =
+            (req.query?.type || "minecraft")
+                .toString()
+                .toLowerCase();
+
+        const typeConfig = KEY_TYPES[typeParam];
+
+        if (!typeConfig) {
+            return res.status(400).json({
+                success: false,
+                error: "Loại key không hợp lệ"
+            });
+        }
+
+        // =====================================
+        // 2. LẤY TOKEN
         // =====================================
 
         let token = req.query?.token;
@@ -100,7 +135,7 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 2. KIỂM TRA TOKEN
+        // 3. KIỂM TRA TOKEN
         // =====================================
 
         if (!isValidToken(token)) {
@@ -111,13 +146,13 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 3. LẤY IP
+        // 4. LẤY IP
         // =====================================
 
         const ip = getClientIp(req);
 
         // =====================================
-        // 4. TOKEN ĐÃ DÙNG?
+        // 5. TOKEN ĐÃ DÙNG?
         // =====================================
 
         const tokenKey = `used-token:${token}`;
@@ -132,10 +167,10 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 5. IP ĐÃ NHẬN KEY?
+        // 6. IP ĐÃ NHẬN KEY LOẠI NÀY?
         // =====================================
 
-        const ipKey = `ip:${ip}`;
+        const ipKey = `${typeConfig.ipPrefix}:${ip}`;
 
         const alreadyClaimedByIp =
             await kv.get(ipKey);
@@ -148,16 +183,16 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 6. LẤY DANH SÁCH KEY CÒN LẠI TỪ KV
-        //    (nạp từ keys.json nếu KV chưa có)
+        // 7. LẤY DANH SÁCH KEY CÒN LẠI TỪ KV
+        //    (nạp từ file json nếu KV chưa có)
         // =====================================
 
-        let keys = await kv.get("remaining-keys");
+        let keys = await kv.get(typeConfig.kvList);
 
         if (!keys) {
             const keysPath = path.join(
                 process.cwd(),
-                "keys.json"
+                typeConfig.file
             );
 
             const keysData = JSON.parse(
@@ -166,7 +201,7 @@ module.exports = async (req, res) => {
 
             if (!Array.isArray(keysData)) {
                 throw new Error(
-                    "keys.json must contain an array of keys"
+                    typeConfig.file + " must contain an array of keys"
                 );
             }
 
@@ -174,7 +209,7 @@ module.exports = async (req, res) => {
                 .map(key => String(key).trim())
                 .filter(Boolean);
 
-            await kv.set("remaining-keys", keys);
+            await kv.set(typeConfig.kvList, keys);
         }
 
         if (keys.length === 0) {
@@ -185,13 +220,13 @@ module.exports = async (req, res) => {
         }
 
         // =====================================
-        // 7. LẤY KEY ĐẦU TIÊN VÀ XOÁ KHỎI DANH SÁCH
+        // 8. LẤY KEY ĐẦU TIÊN VÀ XOÁ KHỎI DANH SÁCH
         // =====================================
 
         for (let attempt = 0; attempt < 10; attempt++) {
 
             const currentKeys =
-                (await kv.get("remaining-keys")) || [];
+                (await kv.get(typeConfig.kvList)) || [];
 
             const availableKey = currentKeys[0];
 
@@ -205,11 +240,11 @@ module.exports = async (req, res) => {
             const updatedKeys = currentKeys.slice(1);
 
             // =====================================
-            // 8. LƯU DỮ LIỆU
+            // 9. LƯU DỮ LIỆU
             // =====================================
 
             await kv.set(
-                "remaining-keys",
+                typeConfig.kvList,
                 updatedKeys
             );
 
