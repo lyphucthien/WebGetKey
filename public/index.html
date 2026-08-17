@@ -11,6 +11,12 @@
 
     <title>Get Key Minecraft</title>
 
+    <link
+        rel="icon"
+        type="image/png"
+        href="https://res.cloudinary.com/dkui88bcf/image/upload/v1786939501/Logo_LPT_vnq390.png"
+    >
+
     <style>
 
         :root {
@@ -888,20 +894,21 @@
         document.getElementById("typeBtnLpthub");
 
     /* =========================
-       LOẠI KEY ĐANG CHỌN
+       LOẠI KEY
     ========================= */
 
     const TYPE_LABELS = {
         minecraft: "Server Minecraft",
-        lpthub: "Script LPTHUB"
+        lpthub: "Script LPT HUB"
     };
 
-    let currentType = "minecraft";
+    const TYPE_STORAGE_KEY = "selected_type";
+
+    let currentType =
+        localStorage.getItem(TYPE_STORAGE_KEY) || "minecraft";
 
     /* =========================
-       CHỐNG F5 / TAB ẨN DANH
-       Khóa theo THỜI GIAN THỰC: 2 tiếng 50 phút
-       (không còn đếm 10s chờ, bấm nút là gửi luôn)
+       THỜI GIAN CHỜ
     ========================= */
 
     const COOLDOWN_MS =
@@ -933,7 +940,7 @@
         );
     }
 
-    // Khoá nút lại, đếm ngược tới khi được lấy KEY tiếp theo
+    // Khoá nút, đếm ngược
     function lockButton() {
 
         mainBtn.disabled = true;
@@ -978,7 +985,7 @@
         cooldownTimer = setInterval(tick, 1000);
     }
 
-    // Mở khoá nút, sẵn sàng cho bấm gửi lấy KEY ngay lập tức
+    // Mở khoá nút
     function unlockButton() {
 
         if (cooldownTimer) {
@@ -1003,8 +1010,8 @@
         pulse.classList.add("ready");
     }
 
-    // Kiểm tra trạng thái ngay khi tải trang / khi đổi loại key
-    // (chống F5 và tab ẩn danh dựa theo mốc thời gian đã lưu)
+    // Kiểm tra trạng thái ngay khi tải trang / đổi loại key
+    // (chống F5 và tab ẩn danh)
     function refreshState() {
 
         const savedKey = localStorage.getItem(getStorageKey());
@@ -1025,18 +1032,18 @@
 
             unlockButton();
         }
-    }
+    }  
 
-    refreshState();
+    // Đổi loại key (MINECRAFT <-> LPTHUB)
+    function switchType(type, force) {
 
-    // Đổi loại key (MINECRAFT <-> LPTHUB) với animation trượt
-    function switchType(type) {
-
-        if (type === currentType) {
+        if (type === currentType && !force) {
             return;
         }
 
         currentType = type;
+
+        localStorage.setItem(TYPE_STORAGE_KEY, type);
 
         typeBtnMinecraft.classList.toggle(
             "active",
@@ -1060,6 +1067,8 @@
         refreshState();
     }
 
+    switchType(currentType, true);
+
     typeBtnMinecraft.addEventListener(
         "click",
         () => switchType("minecraft")
@@ -1071,8 +1080,7 @@
     );
 
     /* =========================
-       GET KEY FROM SERVER
-       SERVER SẼ ĐỌC keys.json
+        Lấy Key từ server
     ========================= */
 
     mainBtn.addEventListener(
