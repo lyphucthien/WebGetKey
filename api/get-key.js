@@ -4,11 +4,9 @@ const crypto = require("crypto");
 const { kv } = require("@vercel/kv");
 
 const SECRET = process.env.VERIFY_SECRET;
-
 const TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 
-// Khớp với cooldown 3 tiếng bên frontend
-const IP_LOCK_SECONDS = (3 * 60 * 60); // 10800s
+const IP_LOCK_SECONDS = (3 * 60 * 60);
 
 // =====================================
 // CẤU HÌNH TỪNG LOẠI KEY
@@ -333,6 +331,11 @@ module.exports = async (req, res) => {
             await kv.set(
                 typeConfig.kvList,
                 updatedKeys
+            );
+
+            await kv.sadd(
+                "issued-set-minecraft",
+                availableKey
             );
 
             await kv.set(
